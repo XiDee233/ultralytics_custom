@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torchvision.models as models
 import pnnx
+from PIL.ImageOps import scale
 from sklearn.model_selection import KFold
 
 from ultralytics import YOLO
@@ -42,12 +43,12 @@ if __name__ == '__main__':
     if x == 'y' or x == 'Y':
         # yolo = YOLO(r'ultralytics/cfg/models/11/yolo11n.yaml')
         # 先加载权重
-        yolo = YOLO(r'D:\Android\pyProj\ultralytics-main\ultralytics-main\runs\fish\detect\Archie\yolo11\train35\weights\best.pt')
+        yolo = YOLO(r'D:\pyProject\ultralytics_custom\runs\fish\detect\Archie\yolo11FRFN\train2\weights\best.pt')
         # yolo.train(data=r'mydataset.yaml',
         #            workers=8, epochs=300, batch=16, resume=True, project='runs/detect/Archie')
 
-        yolo.train(data=r'datasets/SuLinSheng/data.yaml',
-                   project='runs/fish/detect/Archie/yolo11',
+        yolo.train(data=r'datasets/coco8/data.yaml',
+                   project='runs/fish/detect/Archie/yolo11FRFN',
                    device='0',
                    epochs=30,  # 训练过程中整个数据集将被迭代多少次,显卡不行你就调小点
                    batch=20,  # 一次看完多少张图片才进行权重更新
@@ -303,9 +304,9 @@ if __name__ == '__main__':
             cv2.destroyAllWindows()
     elif x == 'n':
         # 加载导出的 NCNN 模型
-        model = YOLO(r'D:\Android\pyProj\ultralytics-main\ultralytics-main\runs\fish\detect\Archie\yolo11FRFN\train2\weights\best.pt')
+        model = YOLO(r'D:\pyProject\ultralytics_custom\runs\fish\detect\Archie\yolo112025726\train16\weights\best.onnx')
         # 打开视频文件
-        video_path = r"C:\Users\16652\Documents\WeChat Files\wxid_2il9e2877tum22\FileStorage\Video\2025-05\017ae61abed77200ee0820c84fcc60a7_raw.mp4"
+        video_path = r"D:\repos\TrackFry\64cf61ff81c98ed480ef4a26a178b778_raw.mp4"
         cap = cv2.VideoCapture(video_path)
 
         # 获取原始视频分辨率
@@ -402,18 +403,54 @@ if __name__ == '__main__':
 
 
     elif x == 'seam':
-        model = YOLO(r"D:\Android\pyProj\ultralytics-main\ultralytics-main\ultralytics\cfg\models\11\yolo11_FRFN.yaml").\
-            load(r"D:\Android\pyProj\ultralytics-main\ultralytics-main\runs\fish\yolo11n.pt")
+        model = YOLO(r"D:\pyProject\ultralytics_custom\runs\fish\detect\Archie\yolo112025726\train27\weights\best.pt")
+        # load(r"D:\Android\pyProj\ultralytics-main\ultralytics-main\runs\fish\yolo11n.pt")
         # 直接加载上次训练的模型（包含训练状态）
         # model = YOLO(
-            # r"D:\Android\pyProj\ultralytics-main\ultralytics-main\runs\fish\detect\Archie\yolo11Syb\train3\weights\last.pt")
+        #     r"D:\pyProject\ultralytics_custom\runs\fish\detect\Archie\yolo112025726\train4\weights\best.pt")
         # model = YOLO(r"D:\Android\pyProj\ultralytics-main\ultralytics-main\ultralytics\cfg\models\11\yolo11.yaml").\
         #     load(r"D:\Android\pyProj\ultralytics-main\ultralytics-main\runs\fish\yolo11n.pt")
-        results = model.train(data=r'D:\Android\pyProj\ultralytics-main\ultralytics-main\datasets\61fishs\dataset_20250603_014305_yolo\dataset\enhance\data.yaml',
-                   project='runs/fish/detect/Archie/yolo11FRFN',
+        results = model.train(data=r'D:\pyProject\ultralytics_custom\datasets\61fishs\dataset_20250603_014305_yolo\dataset\enhance\data.yaml',
+                   project='runs/fish/detect/Archie/yolo112025726',
                    device='0',
-                   epochs=60,
-                   batch=16,  # 一次看完多少张图片才进行权重更新
+                   epochs=12,
+                   batch=14,  # 一次看完多少张图片才进行权重更新
                    workers=4,
                    imgsz=640,
-                   lr0=0.0001)
+                   lr0=0.00001,
+                   pretrained=True ) # 确保使用预训练权重)
+
+    elif x == 'onnx':
+        model = YOLO(r"D:\pyProject\ultralytics_custom\runs\fish\detect\Archie\yolo112025726\train13\weights\best.pt")  # 替换为你的模型路径
+
+# 指定导出路径和其他参数
+        success = model.export(
+            format="openvino",
+        )
+
+    elif x == 'coco':
+        # 加载YOLO11n模型
+        model = YOLO(r'D:\pyProject\ultralytics_custom\ultralytics\cfg\models\11\yolo11.yaml')
+
+        # 使用coco128数据集（约128张图）训练10轮
+        results = model.train(
+            data=r'D:\pyProject\ultralytics_custom\datasets\coco128\coco128.yaml',  # 128张图像的COCO子集
+            epochs=10,
+            imgsz=640,
+            batch=16,
+            workers=4,
+            device='0',  # 使用GPU，无GPU则改为'cpu'
+            project='runs/fish/detect/Archie/yolo112025726',
+            name='train'
+        )
+    elif x == 'yolo':
+        model = YOLO(r"D:\pyProject\ultralytics_custom\runs\fish\detect\Archie\yolo112025726\train39\weights\best.onnx")
+
+        # 直接检测视频并显示（会自动处理显示和退出）
+        model(source=r"D:\repos\TrackFry\fish720.mp4", show=True)
+
+
+
+
+
+
